@@ -7,61 +7,52 @@ from io import StringIO
 import numpy as np
 import random
 
-# Convert Stockfish score to Expected Points (EP)
-def compute_expected_points(score):
-    if score is None:
-        return 0.5
-    return 1 / (1 + 10 ** (-score / 400))
-
 # Move Classification based on Expected Points loss (Chess.com criteria)
-def classify_move(expected_points_lost):
-    if expected_points_lost == 0:
-        return "Best", "green"
-    elif 0.00 < expected_points_lost <= 0.02:
-        return "Excellent", "blue"
-    elif 0.02 < expected_points_lost <= 0.05:
-        return "Good", "cyan"
-    elif 0.05 < expected_points_lost <= 0.10:
+def classify_move(score_change):
+    if score_change == 0:
+        return "Best Move", "green"
+    elif 0 < score_change < 50:
+        return "Good Move", "blue"
+    elif 50 <= score_change < 150:
         return "Inaccuracy", "yellow"
-    elif 0.10 < expected_points_lost <= 0.20:
+    elif 150 <= score_change < 300:
         return "Mistake", "orange"
     else:
         return "Blunder", "red"
 
-# Analyze game using Stockfish with user-selected depth
+
 def analyze_game(game, engine_path, depth):
     engine = chess.engine.SimpleEngine.popen_uci(engine_path)
     analysis_results = []
     board = game.board()
 
+    pre_eval = 0
     for move in game.mainline_moves():
-        # Get Stockfish evaluation
+        # Get Stockfish evaluation for the current position
         info = engine.analyse(board, chess.engine.Limit(depth=depth))
-
-        # Extract move evaluation
         played_score = info["score"].white().score(mate_score=1000)
-        best_score = info["score"].white().score(mate_score=1000)  # ✅ Correctly extract best move score
 
+        score_change = abs(played_score - pre_eval)
 
-        # Compute Expected Points (EP)
-        played_move_EP = compute_expected_points(played_score)
-        best_move_EP = compute_expected_points(best_score)
-        expected_points_lost = best_move_EP - played_move_EP
+        # Classify move based on Expected Points loss
+        move_quality, color = classify_move(score_change)
 
-        # Classify move
-        move_quality, color = classify_move(expected_points_lost)
+        best_move = info.get("pv", [None])[0]
+        best_move_uci = best_move.uci() if best_move else "None"
 
         # Store results
         analysis_results.append({
             'move': move.uci(),
-            'score': played_score / 100.0,
-            'best_move': info.get("pv", [None])[0].uci() if "pv" in info else "None",
-            'expected_points_lost': expected_points_lost,
+            'score': played_score,
+            'best_move': best_move.uci() if best_move else "None",
+            'expected_points_lost': score_change,
             'quality': move_quality,
             'color': color
         })
 
-        board.push(move)
+        pre_eval = played_score
+        board.push(move)  # Push the actual played move
+
 
     engine.quit()
     return analysis_results
