@@ -33,17 +33,18 @@ def analyze_game(game, engine_path, depth):
         played_score = info["score"].white().score(mate_score=1000)
 
         score_change = abs(played_score - pre_eval)
+        win_probability = 1 / (1 + 10 ** (-played_score / 400))
+
 
         # Classify move based on Expected Points loss
         move_quality, color = classify_move(score_change)
 
         best_move = info.get("pv", [None])[0]
-        best_move_uci = best_move.uci() if best_move else "None"
 
         # Store results
         analysis_results.append({
             'move': move.uci(),
-            'score': played_score,
+            'score': win_probability,
             'best_move': best_move.uci() if best_move else "None",
             'expected_points_lost': score_change,
             'quality': move_quality,
@@ -120,7 +121,7 @@ def main():
                 with col3:
                     result = st.session_state.analysis[slider]
                     st.markdown(f"### Move: `{result['move']}`")
-                    st.markdown(f"**Evaluation**: `{result['score']:.2f} pawns`")
+                    st.markdown(f"**Win Probability**: `{(result['score'] * 100):.2f}%`")
                     st.markdown(f"**Best move**: `{result['best_move']}`")
                     st.markdown(
                         f"**Move Quality**: <span style='color:{result['color']}; font-weight:bold;'>{result['quality']}</span>",
