@@ -6,8 +6,16 @@ import chess.svg
 from io import StringIO
 import random
 import pathlib
+import pandas as pd
+import altair as alt
 
-st.set_page_config(layout="wide", initial_sidebar_state="expanded", page_title="Chesalyser", page_icon="logos/small.png")
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="expanded",
+    page_title="Chesalyser",
+    page_icon="logos/small.png",
+)
+
 
 # Move Classification based on Expected Points loss (Chess.com criteria)
 def classify_move(score_change):
@@ -37,32 +45,31 @@ def analyze_game(game, engine_path, depth):
         score_change = abs(played_score - pre_eval)
         win_probability = 1 / (1 + 10 ** (-played_score / 400))
 
-
         # Classify move based on Expected Points loss
         move_quality, color = classify_move(score_change)
 
         best_move = info.get("pv", [None])[0]
 
         # Store results
-        analysis_results.append({
-            'move': move.uci(),
-            'score': win_probability,
-            'best_move': best_move.uci() if best_move else "None",
-            'expected_points_lost': score_change,
-            'quality': move_quality,
-            'color': color
-        })
+        analysis_results.append(
+            {
+                "move": move.uci(),
+                "score": win_probability,
+                "best_move": best_move.uci() if best_move else "None",
+                "expected_points_lost": score_change,
+                "quality": move_quality,
+                "color": color,
+            }
+        )
 
         pre_eval = played_score
         board.push(move)  # Push the actual played move
-
 
     engine.quit()
     return analysis_results
 
 
 def main():
-
     st.logo("logos/big.png", icon_image="logos/small.png")
     file_path = pathlib.Path("style.css")
     with open(file_path) as f:
@@ -73,7 +80,10 @@ def main():
     st.markdown("<hr style='margin: 0px 0px 30px 0px;'>", unsafe_allow_html=True)
 
     with st.sidebar:
-        st.markdown("<div style='background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff); border-radius: 8px'><h1 style='text-align: center; padding: 10px; margin: 0px 0px 15px 0px; font-weight: 700;'>⚙ SETTINGS</h1></div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div style='background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff); border-radius: 8px'><h1 style='text-align: center; padding: 10px; margin: 0px 0px 15px 0px; font-weight: 700;'>⚙ SETTINGS</h1></div>",
+            unsafe_allow_html=True,
+        )
 
         engine_path = "/home/kayozxo/Downloads/stockfish-ubuntu-x86-64-sse41-popcnt/stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
 
@@ -82,15 +92,19 @@ def main():
             pgn_text = st.text_area(":material/content_paste: Or paste PGN text here")
 
         with st.container(border=True):
-        # Depth selection with cheeky phrases
+            # Depth selection with cheeky phrases
             depth_options = {
                 10: "Beginner mode",
                 15: "Casual mode",
                 20: "Serious mode",
                 25: "Grandmaster mode",
-                30: "Stockfish mode"
+                30: "Stockfish mode",
             }
-            depth = st.selectbox(":material/settings: Select Analysis Depth:", options=list(depth_options.keys()), format_func=lambda x: depth_options[x])
+            depth = st.selectbox(
+                ":material/settings: Select Analysis Depth:",
+                options=list(depth_options.keys()),
+                format_func=lambda x: depth_options[x],
+            )
 
     if pgn_file or pgn_text:
         try:
@@ -101,9 +115,12 @@ def main():
                 st.error("Invalid PGN file or text. Please check the format.")
                 return
 
-
             with st.sidebar:
-                if st.button(":material/neurology: ANALYZE GAME", use_container_width=True, key="agame"):
+                if st.button(
+                    ":material/neurology: ANALYZE GAME",
+                    use_container_width=True,
+                    key="agame",
+                ):
                     messages = [
                         "Thinking like Magnus Carlsen...",
                         "Calculating the best blunder... just kidding!",
@@ -112,48 +129,104 @@ def main():
                         "Did you just play a Bongcloud opening? Let's see...",
                         "Analyzing faster than Hikaru can pre-move!",
                         "Determining if this was a 200 IQ move or a disaster...",
-                        "Checking if this game belongs in the Hall of Fame or Shame!"
+                        "Checking if this game belongs in the Hall of Fame or Shame!",
                     ]
                     with st.spinner(random.choice(messages)):
-                        st.session_state.analysis = analyze_game(game, engine_path, depth)
+                        st.session_state.analysis = analyze_game(
+                            game, engine_path, depth
+                        )
                         st.session_state.num_moves = len(st.session_state.analysis)
 
             if "analysis" in st.session_state:
-                    with st.container(border=True):
-                        slider = st.slider("Move Number", 1, st.session_state.num_moves, 1, label_visibility="collapsed") - 1
-                    board = game.board()
-                    for i in range(slider + 1):
-                        board.push(chess.Move.from_uci(st.session_state.analysis[i]['move']))
+                with st.container(border=True):
+                    slider = (
+                        st.slider(
+                            "Move Number",
+                            1,
+                            st.session_state.num_moves,
+                            1,
+                            label_visibility="collapsed",
+                        )
+                        - 1
+                    )
+                board = game.board()
+                for i in range(slider + 1):
+                    board.push(
+                        chess.Move.from_uci(st.session_state.analysis[i]["move"])
+                    )
 
-                    with st.container(border=True):
-                        col2, col3 = st.columns(2, vertical_alignment="center", gap="small")
+                with st.container(border=True):
+                    col2, col3 = st.columns(2, vertical_alignment="center", gap="small")
 
-                        with col2:
+                    with col2:
+                        with st.container(border=True):
                             with st.container(border=True):
-                                with st.container(border=True):
-                                    st.write(f"{game.headers['Black']} ({game.headers['BlackElo']})")
-                                svg = chess.svg.board(board=board, size=400)
-                                st.image(svg, width=800)
-                                with st.container(border=True):
-                                    st.write(f"{game.headers['White']} ({game.headers['WhiteElo']})")
-
-                        with col3:
-                            with st.container(border=True):
-                                result = st.session_state.analysis[slider]
-                                st.markdown("<div style='background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff); border-radius: 6px'><h3 style='text-align: center; padding: 10px; margin: 10px 10px 15px 34px; font-weight: 700;'>GAME REPORT</h3></div>", unsafe_allow_html=True)
-                                st.markdown(f"- **Move**: `{result['move']}`")
-                                st.markdown(f"- **Win Probability**: `{(result['score'] * 100):.2f}%`")
-                                st.markdown(f"- **Best move**: `{result['best_move']}`")
-                                st.markdown(
-                                    f"- **Move Quality**: <span style='color:{result['color']}; font-weight:bold;'>{result['quality']}</span>",
-                                    unsafe_allow_html=True
+                                st.write(
+                                    f"{game.headers['Black']} ({game.headers['BlackElo']})"
                                 )
-                                st.markdown(f"- **Expected Points Lost**: `{result['expected_points_lost']:.3f}`")
+                            svg = chess.svg.board(board=board, size=400)
+                            st.image(svg, width=800)
+                            with st.container(border=True):
+                                st.write(
+                                    f"{game.headers['White']} ({game.headers['WhiteElo']})"
+                                )
 
+                    with col3:
+                        with st.container(border=True):
+                            result = st.session_state.analysis[slider]
+                            st.markdown(
+                                "<div style='background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff); border-radius: 6px'><h3 style='text-align: center; padding: 10px; margin: 10px 10px 15px 34px; font-weight: 700;'>GAME REPORT</h3></div>",
+                                unsafe_allow_html=True,
+                            )
+                            st.markdown(f"- **Move**: `{result['move']}`")
+                            st.markdown(
+                                f"- **Win Probability**: `{(result['score'] * 100):.2f}%`"
+                            )
+                            st.markdown(f"- **Best move**: `{result['best_move']}`")
+                            st.markdown(
+                                f"- **Move Quality**: <span style='color:{result['color']}; font-weight:bold;'>{result['quality']}</span>",
+                                unsafe_allow_html=True,
+                            )
+                            # st.markdown(f"- **Expected Points Lost**: `{result['expected_points_lost']:.3f}`")
+                            with st.container(border=True):
+                                # Win Probability Chart with Brush Selection
+                                win_prob_data = pd.DataFrame(
+                                    {
+                                        "Move Number": range(
+                                            1, len(st.session_state.analysis) + 1
+                                        ),
+                                        "Win Probability": [
+                                            x["score"]
+                                            for x in st.session_state.analysis
+                                        ],
+                                    }
+                                )
 
+                                brush = alt.selection_interval(encodings=["x"])
+
+                                win_prob_chart = (
+                                    alt.Chart(win_prob_data)
+                                    .mark_line()
+                                    .encode(
+                                        x=alt.X("Move Number:Q", title="Move Number"),
+                                        y=alt.Y(
+                                            "Win Probability:Q", title="Win Probability"
+                                        ),  # Removed format="%"`
+                                        tooltip=["Move Number", "Win Probability"],
+                                    )
+                                    .properties(
+                                        title="Win Probability of White Over Time"
+                                    )
+                                    .add_selection(brush)
+                                )
+
+                                st.altair_chart(
+                                    win_prob_chart, use_container_width=True
+                                )
 
         except Exception as e:
             st.error(f"Error analyzing game: {str(e)}")
+
 
 if __name__ == "__main__":
     main()
