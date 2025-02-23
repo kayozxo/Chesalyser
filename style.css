@@ -1,0 +1,14 @@
+.st-key-agame button {
+  background: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff);
+  height: 50px;
+  transition: background 0.8s ease-in-out !important;
+}
+
+.st-key-agame button p {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.st-key-agame button:hover {
+  background: linear-gradient(to bottom right, #00f0ff, #0e6fff, #8f5bff);
+}

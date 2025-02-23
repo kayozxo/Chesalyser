@@ -6,6 +6,9 @@ import chess.svg
 from io import StringIO
 import numpy as np
 import random
+import pathlib
+
+st.set_page_config(layout="wide", initial_sidebar_state="expanded", page_title="Chesalyser", page_icon="logos/small.png")
 
 # Move Classification based on Expected Points loss (Chess.com criteria)
 def classify_move(score_change):
@@ -60,23 +63,35 @@ def analyze_game(game, engine_path, depth):
 
 
 def main():
-    st.title("♟️ Chess Game Analyzer")
+
+    st.logo("logos/big.png", icon_image="logos/small.png")
+    file_path = pathlib.Path("style.css")
+    with open(file_path) as f:
+        st.html(f"<style>{f.read()}</style>")
+
+    st.title(":material/chess_pawn: Chess Game Analyzer")
+
+    st.markdown("<hr style='margin: 0px 0px 30px 0px;'>", unsafe_allow_html=True)
 
     with st.sidebar:
-        st.write("Upload a PGN file to analyze your game like Chess.com!")
-        engine_path = "/home/kayozxo/Downloads/stockfish-ubuntu-x86-64-sse41-popcnt/stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
-        pgn_file = st.file_uploader("Upload PGN file", type="pgn")
-        pgn_text = st.text_area("Or paste PGN text here")
+        st.markdown("<div style='background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff); border-radius: 8px'><h1 style='text-align: center; padding: 10px; margin: 0px 0px 15px 0px; font-weight: 700;'>⚙ SETTINGS</h1></div>", unsafe_allow_html=True)
 
+        engine_path = "/home/kayozxo/Downloads/stockfish-ubuntu-x86-64-sse41-popcnt/stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
+
+        with st.container(border=True):
+            pgn_file = st.file_uploader(":material/upload: Upload PGN file", type="pgn")
+            pgn_text = st.text_area(":material/content_paste: Or paste PGN text here")
+
+        with st.container(border=True):
         # Depth selection with cheeky phrases
-        depth_options = {
-            10: "Beginner mode: Let's not overthink!",
-            15: "Casual mode: Solid but not too deep!",
-            20: "Serious mode: Think like a FIDE Master!",
-            25: "Grandmaster mode: Big brain time!",
-            30: "Stockfish mode: Maximum overdrive!"
-        }
-        depth = st.selectbox("Select Analysis Depth:", options=list(depth_options.keys()), format_func=lambda x: depth_options[x])
+            depth_options = {
+                10: "Beginner mode",
+                15: "Casual mode",
+                20: "Serious mode",
+                25: "Grandmaster mode",
+                30: "Stockfish mode"
+            }
+            depth = st.selectbox(":material/settings: Select Analysis Depth:", options=list(depth_options.keys()), format_func=lambda x: depth_options[x])
 
     if pgn_file or pgn_text:
         try:
@@ -87,11 +102,9 @@ def main():
                 st.error("Invalid PGN file or text. Please check the format.")
                 return
 
-            with st.expander("Game Header"):
-                st.write(game.headers)
 
             with st.sidebar:
-                if st.button("Analyze Game"):
+                if st.button(":material/neurology: ANALYZE GAME", use_container_width=True, key="agame"):
                     messages = [
                         "Thinking like Magnus Carlsen...",
                         "Calculating the best blunder... just kidding!",
@@ -107,27 +120,38 @@ def main():
                         st.session_state.num_moves = len(st.session_state.analysis)
 
             if "analysis" in st.session_state:
-                slider = st.slider("Move Number", 1, st.session_state.num_moves, 1) - 1
-                board = game.board()
-                for i in range(slider + 1):
-                    board.push(chess.Move.from_uci(st.session_state.analysis[i]['move']))
+                    with st.container(border=True):
+                        slider = st.slider("Move Number", 1, st.session_state.num_moves, 1, label_visibility="collapsed") - 1
+                    board = game.board()
+                    for i in range(slider + 1):
+                        board.push(chess.Move.from_uci(st.session_state.analysis[i]['move']))
 
-                col2, col3 = st.columns(2)
+                    with st.container(border=True):
+                        col2, col3 = st.columns(2, vertical_alignment="center", gap="small")
 
-                with col2:
-                    svg = chess.svg.board(board=board, size=400)
-                    st.image(svg, width=400)
+                        with col2:
+                            with st.container(border=True):
+                                with st.container(border=True):
+                                    st.write(f"{game.headers['Black']} ({game.headers['BlackElo']})")
+                                svg = chess.svg.board(board=board, size=400)
+                                st.image(svg, width=800)
+                                with st.container(border=True):
+                                    st.write(f"{game.headers['White']} ({game.headers['WhiteElo']})")
 
-                with col3:
-                    result = st.session_state.analysis[slider]
-                    st.markdown(f"### Move: `{result['move']}`")
-                    st.markdown(f"**Win Probability**: `{(result['score'] * 100):.2f}%`")
-                    st.markdown(f"**Best move**: `{result['best_move']}`")
-                    st.markdown(
-                        f"**Move Quality**: <span style='color:{result['color']}; font-weight:bold;'>{result['quality']}</span>",
-                        unsafe_allow_html=True
-                    )
-                    st.markdown(f"**Expected Points Lost**: `{result['expected_points_lost']:.3f}`")
+                        with col3:
+                            with st.container(border=True):
+                                result = st.session_state.analysis[slider]
+                                st.markdown("<div style='background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff); border-radius: 6px'><h3 style='text-align: center; padding: 10px; margin: 10px 10px 15px 34px; font-weight: 700;'>GAME REPORT</h3></div>", unsafe_allow_html=True)
+                                st.markdown(f"- **Move**: `{result['move']}`")
+                                st.markdown(f"- **Win Probability**: `{(result['score'] * 100):.2f}%`")
+                                st.markdown(f"- **Best move**: `{result['best_move']}`")
+                                st.markdown(
+                                    f"- **Move Quality**: <span style='color:{result['color']}; font-weight:bold;'>{result['quality']}</span>",
+                                    unsafe_allow_html=True
+                                )
+                                st.markdown(f"- **Expected Points Lost**: `{result['expected_points_lost']:.3f}`")
+
+
 
         except Exception as e:
             st.error(f"Error analyzing game: {str(e)}")
