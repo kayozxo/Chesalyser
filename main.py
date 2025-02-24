@@ -4,7 +4,6 @@ import chess.pgn
 import chess.engine
 import chess.svg
 from io import StringIO
-import numpy as np
 import random
 import pathlib
 
