@@ -17,53 +17,95 @@ st.set_page_config(
 )
 
 
-# Move Classification based on Expected Points loss (Chess.com criteria)
-def classify_move(score_change):
-    if score_change == 0:
-        return "Best Move", "green"
-    elif 0 < score_change < 50:
-        return "Good Move", "blue"
-    elif 50 <= score_change < 150:
-        return "Inaccuracy", "yellow"
-    elif 150 <= score_change < 300:
-        return "Mistake", "orange"
-    else:
-        return "Blunder", "red"
+def classify_move(score_change, is_capture=False, moved_piece=None):
+    if is_capture:
+        if score_change < 30:
+            return "Best Move", "green"
+        elif 30 <= score_change < 80:
+            return "Good Move", "blue"
+        elif 80 <= score_change < 180:
+            return "Inaccuracy", "yellow"
+        elif 180 <= score_change < 350:
+            return "Mistake", "orange"
+        else:
+            return "Blunder", "red"
 
+    elif moved_piece == chess.QUEEN:
+        if score_change < 40:
+            return "Best Move", "green"
+        elif 40 <= score_change < 100:
+            return "Good Move", "blue"
+        elif 100 <= score_change < 200:
+            return "Inaccuracy", "yellow"
+        elif 200 <= score_change < 400:
+            return "Mistake", "orange"
+        else:
+            return "Blunder", "red"
+
+    else:
+        if score_change < 20:
+            return "Best Move", "green"
+        elif 20 <= score_change < 70:
+            return "Good Move", "blue"
+        elif 70 <= score_change < 150:
+            return "Inaccuracy", "yellow"
+        elif 150 <= score_change < 300:
+            return "Mistake", "orange"
+        else:
+            return "Blunder", "red"
 
 def analyze_game(game, engine_path, depth):
     engine = chess.engine.SimpleEngine.popen_uci(engine_path)
     analysis_results = []
     board = game.board()
 
-    pre_eval = 0
-    for move in game.mainline_moves():
-        # Get Stockfish evaluation for the current position
+    previous_eval = None
+
+    for move_index, move in enumerate(game.mainline_moves()):
+        is_capture = board.is_capture(move)
+
+        from_square = move.from_square
+        moved_piece = board.piece_type_at(from_square)
+
+        current_position = board.copy()
+
+        board.push(move)
+
+        side_to_move = not board.turn
+
         info = engine.analyse(board, chess.engine.Limit(depth=depth))
-        played_score = info["score"].white().score(mate_score=1000)
+        current_eval = info["score"].white().score(mate_score=10000)
 
-        score_change = abs(played_score - pre_eval)
-        win_probability = 1 / (1 + 10 ** (-played_score / 400))
+        if previous_eval is None:
+            score_change = 0
+        else:
+            if side_to_move:  # White just moved
+                score_change = previous_eval - current_eval
+            else:  # Black just moved
+                score_change = current_eval - previous_eval
 
-        # Classify move based on Expected Points loss
-        move_quality, color = classify_move(score_change)
+            score_change = abs(score_change)
 
-        best_move = info.get("pv", [None])[0]
+        previous_eval = current_eval
 
-        # Store results
-        analysis_results.append(
-            {
-                "move": move.uci(),
-                "score": win_probability,
-                "best_move": best_move.uci() if best_move else "None",
-                "expected_points_lost": score_change,
-                "quality": move_quality,
-                "color": color,
-            }
-        )
+        win_probability = 1 / (1 + 10 ** (-current_eval / 400))
 
-        pre_eval = played_score
-        board.push(move)  # Push the actual played move
+        move_quality, color = classify_move(score_change, is_capture, moved_piece)
+
+        best_move_info = engine.analyse(current_position, chess.engine.Limit(depth=depth))
+        best_move = best_move_info.get("pv", [None])[0]
+
+        analysis_results.append({
+            "move": move.uci(),
+            "score": round(win_probability, 3),
+            "centipawn_eval": current_eval,
+            "best_move": best_move.uci() if best_move else "None",
+            "score_change": round(score_change, 1),
+            "quality": move_quality,
+            "color": color,
+            "is_capture": is_capture,
+            "piece_moved": chess.piece_name(moved_piece) if moved_piece else "None",
+        })
 
     engine.quit()
     return analysis_results

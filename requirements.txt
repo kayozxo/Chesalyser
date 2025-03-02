@@ -1,6 +1,6 @@
 streamlit
 chess
 python-chess
-plotly
-
+altair==4.2.2
+pandas
     engine_path = "/home/kayozxo/Downloads/stockfish-ubuntu-x86-64-sse41-popcnt/stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
