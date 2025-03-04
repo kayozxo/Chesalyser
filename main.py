@@ -127,7 +127,7 @@ def main():
             unsafe_allow_html=True,
         )
 
-        engine_path = "/home/kayozxo/Downloads/stockfish-ubuntu-x86-64-sse41-popcnt/stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
+        engine_path = "stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
 
         with st.container(border=True):
             pgn_file = st.file_uploader(":material/upload: Upload PGN file", type="pgn")
@@ -268,6 +268,9 @@ def main():
 
         except Exception as e:
             st.error(f"Error analyzing game: {str(e)}")
+
+        with st.sidebar:
+            st.markdown("###### :gray[Powered by [Stockfish](https://stockfishchess.org/)]")
 
 
 if __name__ == "__main__":
