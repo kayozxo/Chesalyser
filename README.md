@@ -26,19 +26,83 @@ A powerful chess game analyzer built with Python and Streamlit, leveraging Stock
 ### Prerequisites
 
 - Python 3.9+
-- Stockfish binary (included in `stockfish/` folder)
+- Stockfish engine (installation varies by OS)
+
+### All Platforms
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/chesalyser.git
+git clone https://github.com/kayozxo/chesalyser.git
 cd chesalyser
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
+```
 
-# Download Stockfish (Linux)
+### OS-Specific Setup
+
+#### **Windows**
+
+1. Download Stockfish:
+   - [Official Windows build](https://stockfishchess.org/download/windows/)
+   - Extract ZIP and place `stockfish-windows-x86-64-avx2.exe` in `/stockfish` folder
+2. Update engine path in code:
+
+```python
+# In main.py, change:
+engine_path = "stockfish/stockfish-windows-x86-64-avx2.exe"
+```
+
+#### **macOS**
+
+```bash
+# Using Homebrew (recommended)
+brew install stockfish
+
+# Or manual download:
+# 1. Get macOS build from https://stockfishchess.org/download/mac/
+# 2. Place in project folder under /stockfish
+# 3. Make executable:
+chmod +x stockfish/stockfish-macos-x86-64
+```
+
+#### **Linux**
+
+```bash
+# Clone this repository
+
+# Make executable
 chmod +x stockfish/stockfish-ubuntu-x86-64-sse41-popcnt
 ```
+
+### Verify Installation
+
+Set the correct engine path in the code:
+
+```python
+# main.py (adjust for your OS)
+engine_path = {
+    "Windows": "stockfish/stockfish-windows-x86-64-avx2.exe",
+    "macOS": "stockfish/stockfish-macos-x86-64",
+    "Linux": "stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
+}[your_os]
+```
+
+## 🚀 Usage Notes
+
+- **First Run**: The app may take 30-60 seconds to initialize Stockfish
+- **Windows Users**: Add exception for Stockfish in your antivirus if needed
+- **M1/M2 Mac Users**: Use Rosetta if using x86 build, or compile ARM version
+
+## 🚨 Troubleshooting
+
+**Platform-Specific Issues**
+
+| OS      | Common Fixes                                                               |
+| ------- | -------------------------------------------------------------------------- |
+| Windows | 1. Add `.exe` extension if missing<br>2. Run as Administrator              |
+| macOS   | 1. `xattr -cr stockfish/...` (remove quarantine flags)<br>2. Use ARM build |
+| Linux   | 1. Install `libnss3` if missing<br>2. Check 32/64-bit compatibility        |
 
 ## 🚀 Usage
 
