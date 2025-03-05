@@ -1,10 +1,8 @@
 ![Logo](logos/big.png)
 
-# Chesalyser - Chess Game Analyzer ♟️
-
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)](https://streamlit.io/)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Stockfish](https://img.shields.io/badge/Stockfish-7B61FF?style=for-the-badge&logo=chess.com&logoColor=white)](https://stockfishchess.org/)
+[![Stockfish](https://img.shields.io/badge/Stockfish-43AD6A?style=for-the-badge&logo=chess.com&logoColor=white)](https://stockfishchess.org/)
 
 A powerful chess game analyzer built with Python and Streamlit, leveraging Stockfish for position evaluation. Provides detailed move analysis, win probability tracking, and interactive game review.
 
