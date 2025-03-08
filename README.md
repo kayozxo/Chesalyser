@@ -8,7 +8,7 @@
 
 A powerful chess game analyzer built with Python and Streamlit, leveraging Stockfish for position evaluation. Provides detailed move analysis, win probability tracking, and interactive game review.
 
-![Chesalyser Demo](logos/ss.png)
+![Chesalyser Demo](logos/app.png)
 
 ## 🌟 Features
 
