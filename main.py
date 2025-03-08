@@ -8,6 +8,8 @@ import random
 import pathlib
 import pandas as pd
 import altair as alt
+import os
+import subprocess
 
 st.set_page_config(
     layout="wide",
@@ -127,7 +129,12 @@ def main():
             unsafe_allow_html=True,
         )
 
-        engine_path = "stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
+        with st.container(border=True):
+            engine_path = st.text_input(
+                ":material/conversion_path: Stockfish Engine Path",
+                value="stockfish/stockfish-ubuntu-x86-64-sse41-popcnt",
+                help="Paste your Stockfish engine path here."
+            )
 
         with st.container(border=True):
             pgn_file = st.file_uploader(":material/upload: Upload PGN file", type="pgn")

@@ -45,13 +45,8 @@ pip install -r requirements.txt
 
 1. Download Stockfish:
    - [Official Windows build](https://stockfishchess.org/download/windows/)
-   - Extract ZIP and place `stockfish-windows-x86-64-avx2.exe` in `/stockfish` folder
-2. Update engine path in code:
-
-```python
-# In main.py, change:
-engine_path = "stockfish/stockfish-windows-x86-64-avx2.exe"
-```
+   - Extract ZIP.
+2. Update engine path in the provided text area in sidebar.
 
 #### **macOS**
 
@@ -61,9 +56,10 @@ brew install stockfish
 
 # Or manual download:
 # 1. Get macOS build from https://stockfishchess.org/download/mac/
-# 2. Place in project folder under /stockfish
-# 3. Make executable:
+# 2. Make executable:
 chmod +x stockfish/stockfish-macos-x86-64
+
+#3. Update engine path in the provided text area in sidebar.
 ```
 
 #### **Linux**
@@ -73,19 +69,6 @@ chmod +x stockfish/stockfish-macos-x86-64
 
 # Make executable
 chmod +x stockfish/stockfish-ubuntu-x86-64-sse41-popcnt
-```
-
-### Verify Installation
-
-Set the correct engine path in the code:
-
-```python
-# main.py (adjust for your OS)
-engine_path = {
-    "Windows": "stockfish/stockfish-windows-x86-64-avx2.exe",
-    "macOS": "stockfish/stockfish-macos-x86-64",
-    "Linux": "stockfish/stockfish-ubuntu-x86-64-sse41-popcnt"
-}[your_os]
 ```
 
 ## 🚀 Usage Notes
@@ -114,6 +97,7 @@ streamlit run main.py
 
 2. In the sidebar:
 
+   - Paste your engine path (linux users: ignore this step)
    - Upload PGN file or paste game text
    - Select analysis depth (Beginner to Stockfish mode)
    - Click "ANALYZE GAME"
@@ -158,15 +142,6 @@ depth_options = {
 if is_capture:
     if score_change < 30:  # Modify these thresholds
         return "Best Move", "green"
-```
-
-3. **UI Colors** (in `style.css`):
-
-```css
-/* Custom gradient effects */
-.gradient-header {
-  background-image: linear-gradient(to top right, #00f0ff, #0e6fff, #8f5bff);
-}
 ```
 
 ## 🚨 Troubleshooting
