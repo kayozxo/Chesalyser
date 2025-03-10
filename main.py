@@ -188,9 +188,10 @@ def main():
 
             if "analysis" in st.session_state:
                 with st.container(border=True):
+                    st.write("Tap ꞏ and then use ← and → keys to navigate")
                     slider = (
                         st.slider(
-                            "Move Number",
+                            "Tap ꞏ and then use ← and → keys to navigate",
                             1,
                             st.session_state.num_moves,
                             1,
@@ -276,8 +277,8 @@ def main():
         except Exception as e:
             st.error(f"Error analyzing game: {str(e)}")
 
-        with st.sidebar:
-            st.markdown("###### :gray[Powered by [Stockfish](https://stockfishchess.org/)]")
+    with st.sidebar:
+        st.markdown("###### :gray[Powered by [Stockfish](https://stockfishchess.org/)]")
 
 
 if __name__ == "__main__":
