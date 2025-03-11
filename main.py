@@ -8,8 +8,7 @@ import random
 import pathlib
 import pandas as pd
 import altair as alt
-import os
-import subprocess
+
 
 st.set_page_config(
     layout="wide",
@@ -19,9 +18,9 @@ st.set_page_config(
 )
 
 
-def classify_move(score_change, is_capture=False, moved_piece=None):
+def classify_move(score_change, move, best_move, is_capture=False, moved_piece=None):
     if is_capture:
-        if score_change < 30:
+        if move == best_move:
             return "Best Move", "green"
         elif 30 <= score_change < 80:
             return "Good Move", "blue"
@@ -33,7 +32,7 @@ def classify_move(score_change, is_capture=False, moved_piece=None):
             return "Blunder", "red"
 
     elif moved_piece == chess.QUEEN:
-        if score_change < 40:
+        if move == best_move:
             return "Best Move", "green"
         elif 40 <= score_change < 100:
             return "Good Move", "blue"
@@ -45,7 +44,7 @@ def classify_move(score_change, is_capture=False, moved_piece=None):
             return "Blunder", "red"
 
     else:
-        if score_change < 20:
+        if move == best_move:
             return "Best Move", "green"
         elif 20 <= score_change < 70:
             return "Good Move", "blue"
@@ -92,16 +91,19 @@ def analyze_game(game, engine_path, depth):
 
         win_probability = 1 / (1 + 10 ** (-current_eval / 400))
 
-        move_quality, color = classify_move(score_change, is_capture, moved_piece)
+        move = move.uci()
 
         best_move_info = engine.analyse(current_position, chess.engine.Limit(depth=depth))
         best_move = best_move_info.get("pv", [None])[0]
+        best_move = best_move.uci() if best_move else "None"
+
+        move_quality, color = classify_move(score_change, is_capture, moved_piece, move, best_move)
 
         analysis_results.append({
-            "move": move.uci(),
+            "move": move,
             "score": round(win_probability, 3),
             "centipawn_eval": current_eval,
-            "best_move": best_move.uci() if best_move else "None",
+            "best_move": best_move,
             "score_change": round(score_change, 1),
             "quality": move_quality,
             "color": color,
